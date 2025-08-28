@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI提示詞範例產生器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 700px;
+        }
+
+        .settings-panel {
+            width: 35%;
+            padding: 30px;
+            background: #f8fafc;
+            border-right: 2px solid #e2e8f0;
+            overflow-y: auto;
+        }
+
+        .preview-panel {
+            width: 65%;
+            padding: 30px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4facfe;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-group select, .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .form-group select:focus, .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(79, 172, 254, 0.1);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .examples-container {
+            flex: 1;
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+        }
+
+        .examples-container.has-content {
+            border: 2px solid #4facfe;
+            background: white;
+        }
+
+        .example-item {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 4px solid #4facfe;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .example-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .example-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .example-content {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #38a169;
+        }
+
+        .export-section {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .export-btn {
+            flex: 1;
+            background: #ed8936;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background: #dd6b20;
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #a0aec0;
+            font-size: 1.1rem;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .settings-panel, .preview-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI提示詞範例產生器</h1>
+            <p>根據十個關鍵要素生成完整的AI提示詞範例</p>
+        </div>
+
+        <div class="main-content">
+            <div class="settings-panel">
+                <div class="section-title">
+                    🎯 基本設定
+                </div>
+
+                <div class="form-group">
+                    <label for="taskType">任務類型</label>
+                    <select id="taskType">
+                        <option value="writing">文案寫作</option>
+                        <option value="analysis">數據分析</option>
+                        <option value="coding">程式開發</option>
+                        <option value="translation">翻譯服務</option>
+                        <option value="education">教學輔導</option>
+                        <option value="customer_service">客服助手</option>
+                        <option value="creative">創意設計</option>
+                        <option value="research">研究報告</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="aiRole">AI角色設定</label>
+                    <select id="aiRole">
+                        <option value="expert">領域專家</option>
+                        <option value="assistant">助理</option>
+                        <option value="teacher">老師</option>
+                        <option value="consultant">顧問</option>
+                        <option value="analyst">分析師</option>
+                        <option value="writer">作家</option>
+                        <option value="developer">開發者</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="complexity">複雜度</label>
+                    <select id="complexity">
+                        <option value="basic">基礎</option>
+                        <option value="intermediate">中級</option>
+                        <option value="advanced">高級</option>
+                        <option value="expert">專家級</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="outputFormat">輸出格式</label>
+                    <select id="outputFormat">
+                        <option value="structured">結構化文本</option>
+                        <option value="bullet_points">條列重點</option>
+                        <option value="paragraph">段落文章</option>
+                        <option value="table">表格形式</option>
+                        <option value="code">程式碼</option>
+                        <option value="json">JSON格式</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tone">語調風格</label>
+                    <select id="tone">
+                        <option value="professional">專業</option>
+                        <option value="friendly">友善</option>
+                        <option value="formal">正式</option>
+                        <option value="casual">輕鬆</option>
+                        <option value="persuasive">說服性</option>
+                        <option value="educational">教學式</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetAudience">目標受眾</label>
+                    <input type="text" id="targetAudience" placeholder="例：初學者、專業人士、學生..." value="專業人士">
+                </div>
+
+                <div class="section-title">
+                    🔧 進階選項
+                </div>
+
+                <div class="form-group">
+                    <label for="includeElements">包含要素（可多選）</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="context" checked>
+                            <label for="context">任務語境</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="examples" checked>
+                            <label for="examples">範例</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="constraints" checked>
+                            <label for="constraints">限制條件</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="stepByStep" checked>
+                            <label for="stepByStep">逐步指導</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="validation" checked>
+                            <label for="validation">驗證檢查</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="customContext">自訂情境（選填）</label>
+                    <textarea id="customContext" placeholder="輸入特定的使用情境或背景資訊..."></textarea>
+                </div>
+
+                <button class="generate-btn" id="generateBtn">
+                    ✨ 生成提示詞範例
+                </button>
+            </div>
+
+            <div class="preview-panel">
+                <div class="section-title">
+                    📝 生成的提示詞範例
+                </div>
+
+                <div id="promptContainer" class="examples-container">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💡</div>
+                        <p>點擊「生成提示詞範例」開始創建專業的AI提示詞</p>
+                        <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">基於十個關鍵要素的完整提示詞結構</p>
+                    </div>
+                </div>
+
+                <div class="export-section">
+                    <button class="export-btn" id="copyAllBtn">
+                        📋 複製全部
+                    </button>
+                    <button class="export-btn" id="exportBtn">
+                        💾 匯出檔案
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let generatedPrompts = [];
+
+        const promptTemplates = {
+            writing: {
+                context: "作為一位經驗豐富的{role}，你需要為{audience}創建高品質的內容。",
+                task: "請根據以下要求撰寫{content_type}：",
+                examples: "參考格式如下：\n- 標題：簡潔有力，吸引讀者\n- 內容：邏輯清晰，論點充分\n- 結尾：呼應主題，留下深刻印象",
+                constraints: "限制條件：\n- 字數：{word_count}\n- 語調：{tone}\n- 避免使用過於技術性的術語",
+                steps: "請按照以下步驟進行：\n1. 分析目標受眾需求\n2. 確定核心訊息\n3. 建立內容大綱\n4. 撰寫正文\n5. 檢查並優化",
+                validation: "完成後請檢查：\n✓ 內容是否符合目標受眾需求\n✓ 語調是否一致\n✓ 邏輯結構是否清晰"
+            },
+            coding: {
+                context: "你是一位資深{role}，擅長程式開發，需要為{audience}提供程式解決方案。",
+                task: "請實作以下功能：{functionality}",
+                examples: "程式碼應包含：\n```\n// 函數定義\n// 錯誤處理\n// 註解說明\n// 測試案例\n```",
+                constraints: "開發要求：\n- 遵循最佳實踐\n- 包含錯誤處理\n- 程式碼可讀性佳\n- 效能優化",
+                steps: "開發流程：\n1. 需求分析\n2. 設計架構\n3. 編寫核心邏輯\n4. 新增錯誤處理\n5. 測試驗證\n6. 優化效能",
+                validation: "程式碼檢查項目：\n✓ 功能是否正確實作\n✓ 是否有適當的錯誤處理\n✓ 程式碼是否易於維護"
+            },
+            analysis: {
+                context: "作為資深{role}，你需要為{audience}提供深入的數據洞察和分析建議。",
+                task: "請分析以下數據並提供見解：",
+                examples: "分析報告結構：\n1. 執行摘要\n2. 數據概覽\n3. 關鍵發現\n4. 趨勢分析\n5. 建議方案",
+                constraints: "分析要求：\n- 使用數據驅動的方法\n- 提供可行的建議\n- 避免主觀推測\n- 量化分析結果",
+                steps: "分析步驟：\n1. 數據清理與驗證\n2. 探索性數據分析\n3. 統計分析\n4. 模式識別\n5. 結果解釋\n6. 建議制定",
+                validation: "分析驗證：\n✓ 數據來源可靠性\n✓ 分析方法適當性\n✓ 結論邏輯性\n✓ 建議可操作性"
+            }
+        };
+
+        function getRoleText(role) {
+            const roles = {
+                expert: "領域專家",
+                assistant: "專業助理",
+                teacher: "資深教師",
+                consultant: "專業顧問",
+                analyst: "資深分析師",
+                writer: "專業作家",
+                developer: "資深開發者"
+            };
+            return roles[role] || "專家";
+        }
+
+        function getTaskTypeName(taskType) {
+            const names = {
+                writing: "文案寫作",
+                analysis: "數據分析",
+                coding: "程式開發",
+                translation: "翻譯服務",
+                education: "教學輔導",
+                customer_service: "客服助手",
+                creative: "創意設計",
+                research: "研究報告"
+            };
+            return names[taskType] || "通用任務";
+        }
+
+        function getTaskDescription(taskType, num) {
+            const descriptions = {
+                writing: ["一篇關於新產品發布的新聞稿", "社群媒體行銷文案"],
+                coding: ["用戶註冊與登入系統", "數據處理與視覺化功能"],
+                analysis: ["季度銷售數據趨勢分析", "用戶行為模式研究"],
+                translation: ["技術文件翻譯", "商業合約翻譯"],
+                education: ["程式設計入門課程", "數據科學教學材料"],
+                customer_service: ["產品諮詢回應", "技術支援解決方案"],
+                creative: ["品牌視覺設計概念", "創意廣告企劃"],
+                research: ["市場趨勢研究報告", "競爭對手分析"]
+            };
+            return descriptions[taskType] ? descriptions[taskType][(num-1) % descriptions[taskType].length] : "特定任務";
+        }
+
+        function getSpecificTask(taskType, num) {
+            const tasks = {
+                writing: [
+                    "公司即將發布一款革新性的AI助手產品，請撰寫一篇正式的新聞稿，包含產品特色、市場定位和發布時程。",
+                    "為電商平台設計一系列社群媒體貼文，推廣年末大促銷活動，需要包含Facebook、Instagram和Twitter三個平台的內容。"
+                ],
+                coding: [
+                    "開發一個支援多種驗證方式（email、手機、社群媒體）的用戶註冊系統，需要包含安全性驗證和錯誤處理。",
+                    "建立一個可以處理CSV數據上傳、清理、分析並生成圖表的Web應用程式。"
+                ],
+                analysis: [
+                    "分析公司過去四個季度的銷售數據，識別關鍵趨勢、季節性模式，並預測下季度表現。",
+                    "研究網站用戶的瀏覽行為，找出轉換率優化的機會點，並提供具體改善建議。"
+                ]
+            };
+            const defaultTasks = [
+                "完成指定的任務需求，並提供詳細的實作方案。",
+                "根據需求規格進行分析和處理，確保符合品質標準。"
+            ];
+            return tasks[taskType] ? tasks[taskType][(num-1) % tasks[taskType].length] : defaultTasks[(num-1) % defaultTasks.length];
+        }
+
+        function getWordCount(complexity) {
+            const counts = {
+                basic: "300-500字",
+                intermediate: "500-800字",
+                advanced: "800-1200字",
+                expert: "1200字以上"
+            };
+            return counts[complexity] || "適當長度";
+        }
+
+        function getOutputFormatDetails(format) {
+            const formats = {
+                structured: "使用清晰的標題和子標題組織內容，每個部分都有明確的分界。",
+                bullet_points: "使用條列式格式，每個重點都要簡潔明瞭，便於快速閱讀。",
+                paragraph: "以完整的段落形式呈現，確保段落間邏輯連貫，過渡自然。",
+                table: "使用表格格式整理資訊，包含適當的欄位標題和資料分類。",
+                code: "提供完整可執行的程式碼，包含註解和使用說明。",
+                json: "使用標準JSON格式，確保語法正確且結構清晰。"
+            };
+            return formats[format] || "請使用適當的格式呈現結果。";
+        }
+
+        function getFormSettings() {
+            const includeElements = {
+                context: document.getElementById("context").checked,
+                examples: document.getElementById("examples").checked,
+                constraints: document.getElementById("constraints").checked,
+                stepByStep: document.getElementById("stepByStep").checked,
+                validation: document.getElementById("validation").checked
+            };
+
+            return {
+                taskType: document.getElementById("taskType").value,
+                aiRole: document.getElementById("aiRole").value,
+                complexity: document.getElementById("complexity").value,
+                outputFormat: document.getElementById("outputFormat").value,
+                tone: document.getElementById("tone").value,
+                targetAudience: document.getElementById("targetAudience").value,
+                customContext: document.getElementById("customContext").value,
+                includeElements: includeElements
+            };
+        }
+
+        function createPromptExample(settings, exampleNum) {
+            const templates = promptTemplates[settings.taskType] || promptTemplates.writing;
+            let prompt = "";
+
+            if (settings.includeElements.context) {
+                prompt += "## 角色設定\n" + templates.context.replace("{role}", getRoleText(settings.aiRole)).replace("{audience}", settings.targetAudience) + "\n\n";
+            }
+
+            prompt += "## 任務描述\n" + templates.task.replace("{content_type}", getTaskDescription(settings.taskType, exampleNum)).replace("{functionality}", getTaskDescription(settings.taskType, exampleNum)) + "\n\n";
+
+            if (settings.customContext.trim()) {
+                prompt += "## 背景資料\n" + settings.customContext + "\n\n";
+            }
+
+            prompt += "## 任務要求\n";
+            prompt += "- 複雜度等級：" + settings.complexity + "\n";
+            prompt += "- 輸出格式：" + settings.outputFormat + "\n";
+            prompt += "- 語調風格：" + settings.tone + "\n";
+            prompt += "- 目標受眾：" + settings.targetAudience + "\n\n";
+
+            if (settings.includeElements.examples) {
+                prompt += "## 範例格式\n" + templates.examples + "\n\n";
+            }
+
+            if (settings.includeElements.constraints) {
+                prompt += "## 限制條件\n" + templates.constraints.replace("{word_count}", getWordCount(settings.complexity)).replace("{tone}", settings.tone) + "\n\n";
+            }
+
+            prompt += "## 具體任務\n" + getSpecificTask(settings.taskType, exampleNum) + "\n\n";
+
+            if (settings.includeElements.stepByStep) {
+                prompt += "## 執行步驟\n" + templates.steps + "\n\n";
+            }
+
+            prompt += "## 輸出格式要求\n" + getOutputFormatDetails(settings.outputFormat) + "\n\n";
+
+            if (settings.includeElements.validation) {
+                prompt += "## 品質檢查\n" + templates.validation + "\n\n";
+                prompt += "請在完成任務後，對照以上檢查項目進行自我驗證。";
+            }
+
+            return {
+                title: getTaskTypeName(settings.taskType) + " - 範例 " + exampleNum,
+                content: prompt
+            };
+        }
+
+        function generatePrompts() {
+            const settings = getFormSettings();
+            generatedPrompts = [];
+
+            for (let i = 0; i < 2; i++) {
+                const prompt = createPromptExample(settings, i + 1);
+                generatedPrompts.push(prompt);
+            }
+
+            displayPrompts();
+        }
+
+        function displayPrompts() {
+            const container = document.getElementById("promptContainer");
+            
+            if (generatedPrompts.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💡</div><p>點擊「生成提示詞範例」開始創建專業的AI提示詞</p><p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">基於十個關鍵要素的完整提示詞結構</p></div>';
+                container.classList.remove("has-content");
+                return;
+            }
+
+            container.classList.add("has-content");
+            let htmlContent = "";
+            
+            for (let i = 0; i < generatedPrompts.length; i++) {
+                const prompt = generatedPrompts[i];
+                htmlContent += '<div class="example-item"><div class="example-title">📋 ' + prompt.title + '</div><div class="example-content">' + prompt.content + '</div><button class="copy-btn" onclick="copyPrompt(' + i + ')">複製提示詞</button></div>';
+            }
+            
+            container.innerHTML = htmlContent;
+        }
+
+        function copyPrompt(index) {
+            const prompt = generatedPrompts[index];
+            navigator.clipboard.writeText(prompt.content).then(function() {
+                showNotification("提示詞已複製到剪貼簿！");
+            });
+        }
+
+        function copyAllPrompts() {
+            if (generatedPrompts.length === 0) {
+                showNotification("請先生成提示詞範例！");
+                return;
+            }
+            
+            const allPrompts = generatedPrompts.map(function(p) {
+                return p.title + "\n" + "=".repeat(50) + "\n\n" + p.content;
+            }).join("\n\n" + "=".repeat(80) + "\n\n");
+            
+            navigator.clipboard.writeText(allPrompts).then(function() {
+                showNotification("所有提示詞已複製到剪貼簿！");
+            });
+        }
+
+        function exportPrompts() {
+            if (generatedPrompts.length === 0) {
+                showNotification("請先生成提示詞範例！");
+                return;
+            }
+            
+            const content = generatedPrompts.map(function(p) {
+                return p.title + "\n" + "=".repeat(50) + "\n\n" + p.content;
+            }).join("\n\n" + "=".repeat(80) + "\n\n");
+            
+            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "AI提示詞範例.txt";
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification("提示詞範例已匯出為檔案！");
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement("div");
+            notification.style.cssText = "position: fixed; top: 20px; right: 20px; background: #48bb78; color: white; padding: 15px 25px; border-radius: 10px; z-index: 1000; font-weight: 600; box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3); animation: slideIn 0.3s ease;";
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(function() {
+                notification.remove();
+            }, 3000);
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("generateBtn").addEventListener("click", generatePrompts);
+            document.getElementById("copyAllBtn").addEventListener("click", copyAllPrompts);
+            document.getElementById("exportBtn").addEventListener("click", exportPrompts);
+        });
+
+        const style = document.createElement("style");
+        style.textContent = "@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }";
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
